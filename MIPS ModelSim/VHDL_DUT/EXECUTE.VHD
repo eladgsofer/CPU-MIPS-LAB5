@@ -89,7 +89,7 @@ PROCESS ( ALU_ctl, Ainput, Binput )
         WHEN "001110" 	=>	ALU_output_mux <= Ainput XOR Binput; 
                         -- shift left logical
         WHEN "000000" 	=>	ALU_output_mux <= X"00000000";
-                        -- shift right logical
+                        -- shift right logical translation from 000010 -> 000111
         WHEN "000111"   => ALU_output_mux <= X"00000000";
         
     ------------------Data Transfer Instructions
@@ -103,10 +103,11 @@ PROCESS ( ALU_ctl, Ainput, Binput )
         WHEN "100001" 	=>	ALU_output_mux <= X"00000000";
         
     ------------------ Conditional Branch Instructions
-        WHEN "100001" 	=>	ALU_output_mux <= X"00000000";
-                        -- beq
+                            -- beq
         WHEN "000100" 	=>	ALU_output_mux <= X"00000000";
-                        -- bneq
+                            -- bneq
+        WHEN "000101" 	=>	ALU_output_mux <= X"00000000";
+
     ------------------ Comparsion Instructions
                         -- set on less then
         WHEN "101010" 	=>	ALU_output_mux <= X"00000000";
@@ -115,7 +116,7 @@ PROCESS ( ALU_ctl, Ainput, Binput )
     ------------------ Unconditional Jump Instructions
                             -- jump
         WHEN "000010" 	=>	ALU_output_mux <= X"00000000";
-                            -- jump register ???
+                            -- jump register translation from 001000 -> 101111
         WHEN "101111" 	=>	ALU_output_mux <= X"00000000";
                             -- jump and link
         WHEN "000011" 	=>	ALU_output_mux <= X"00000000";
