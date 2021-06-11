@@ -97,8 +97,6 @@ PROCESS ( ALU_ctl, Ainput, Binput )
         WHEN "100011" 	=>	ALU_output_mux <= X"00000000";
                         -- sw
         WHEN "101011" 	=>	ALU_output_mux <= X"00000000";
-                        -- sw
-        WHEN "101011" 	=>	ALU_output_mux <= X"00000000";
                         -- lui Load constant into upper 16 bits. Lower 16 bits are set to zero.
         WHEN "001111" 	=>	ALU_output_mux <= X"00000000";
         -- MOVE - addu opcode - Rtype,  with $0
