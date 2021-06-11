@@ -21,11 +21,12 @@ END control;
 
 ARCHITECTURE behavior OF control IS
 
-	SIGNAL  R_format, I_format, Lw, Sw, Beq, Mul 	: STD_LOGIC;
+	SIGNAL  R_format, OpcodeZero, I_format, Lw, Sw, Beq, Mul 	: STD_LOGIC;
 
 BEGIN           
 				-- Code to generate control signals using opcode bits
-	R_format 	<=  '1'  WHEN  Opcode = "000000" OR Mul ELSE '0';
+	OpcodeZero 	<=  '1'  WHEN  Opcode = "000000" ELSE '0';
+	R_format 	<=  OpcodeZero OR Mul;
     I_format    <=  '1'  WHEN  Opcode(5 DOWNTO 3) = "001" ELSE '0';
 	Lw          <=  '1'  WHEN  Opcode = "100011"  ELSE '0';
  	Sw          <=  '1'  WHEN  Opcode = "101011"  ELSE '0';
