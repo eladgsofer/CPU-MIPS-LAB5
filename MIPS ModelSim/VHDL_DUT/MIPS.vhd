@@ -153,6 +153,7 @@ BEGIN
    	PORT MAP (	Read_data_1 	=> read_data_1,
              	Read_data_2 	=> read_data_2,
 				Sign_extend 	=> Sign_extend,
+                Shamt        	=> Instruction( 11 DOWNTO 6 ),
                 Function_opcode	=> Instruction( 5 DOWNTO 0 ),
                 Shamt        	=> Instruction( 10 DOWNTO 6 ),
 				ALUOp 			=> ALUop,
