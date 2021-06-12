@@ -14,7 +14,7 @@ ENTITY control IS
 	MemRead 		: OUT 	STD_LOGIC;
 	MemWrite 	: OUT 	STD_LOGIC;
 	Branch 		: OUT 	STD_LOGIC;
-	ALUop 		: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
+	ALUop 		: OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 	clock, reset	: IN 	STD_LOGIC );
 
 END control;
@@ -25,8 +25,7 @@ ARCHITECTURE behavior OF control IS
 
 BEGIN           
 				-- Code to generate control signals using opcode bits
-	OpcodeZero 	<=  '1'  WHEN  Opcode = "000000" ELSE '0';
-	R_format 	<=  OpcodeZero OR Mul;
+	R_format 	<=  '1'  WHEN  Opcode = "000000" ELSE '0';
     I_format    <=  '1'  WHEN  Opcode(5 DOWNTO 3) = "001" ELSE '0';
 	Lw          <=  '1'  WHEN  Opcode = "100011"  ELSE '0';
  	Sw          <=  '1'  WHEN  Opcode = "101011"  ELSE '0';
@@ -39,8 +38,23 @@ BEGIN
   	MemRead 	<=  Lw;
    	MemWrite 	<=  Sw; 
  	Branch      <=  Beq;
-	ALUOp( 1 ) 	<=  R_format;
-	ALUOp( 0 ) 	<=  Beq; 
+	--ALUOp( 1 ) 	<=  R_format;
+	--ALUOp( 0 ) 	<=  Beq; 
+	ALUOP   <= "000" when (Opcode = "001111" OR Opcode = "001000")  ELSE  --- LUI & ADDI = add 
+			   "001" when (Opcode = "001010" OR Opcode = "000100" OR Opcode = "000101")  ELSE  --- SLTI, BEQ, BNQ = sub
+			   "010" when Opcode = "001110" ELSE  --- XOR
+               "011" when Opcode = "001101" ELSE  --- OR
+			   "100" when Opcode = "001100" ELSE  --- ANDI
+               "101" when Opcode = "011100" ELSE  --- MUL
+               "111" when Opcode = "000000" ELSE  --- R-Type
+               ELSE  "000";
+-- ALUOP to function:
+-- 000 : add  - LUI,ADDI
+-- 001 : sub  - SLTI,BEQ,BNQ
+-- 010 : xor  - XORI
+-- 011 : or   - ORI 
+-- 100 : and  - ANDI
+-- 101 : mul  - MUL
 
    END behavior;
 
