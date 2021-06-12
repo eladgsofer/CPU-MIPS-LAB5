@@ -12,6 +12,7 @@ ENTITY Ifetch IS
         	SIGNAL PC_plus_4_out 	: OUT	STD_LOGIC_VECTOR( 9 DOWNTO 0 );
         	SIGNAL Add_result 		: IN 	STD_LOGIC_VECTOR( 7 DOWNTO 0 );
         	SIGNAL Branch 			: IN 	STD_LOGIC;
+        	SIGNAL BNE 		     	: IN 	STD_LOGIC;
         	SIGNAL Zero 			: IN 	STD_LOGIC;
       		SIGNAL PC_out 			: OUT	STD_LOGIC_VECTOR( 9 DOWNTO 0 );
         	SIGNAL clock, reset 	: IN 	STD_LOGIC);
@@ -34,22 +35,22 @@ inst_memory: altsyncram
 		intended_device_family => "Cyclone"
 	)
 	PORT MAP (
-		clock0     => clock,
-		address_a 	=> Mem_Addr, 
+		clock0          => clock,
+		address_a 	    => Mem_Addr, 
 		q_a 			=> Instruction );
 					-- Instructions always start on word address - not byte
-		PC(1 DOWNTO 0) <= "00";
+		PC(1 DOWNTO 0)  <= "00";
 					-- copy output signals - allows read inside module
 		PC_out 			<= PC;
 		PC_plus_4_out 	<= PC_plus_4;
 						-- send address to inst. memory address register
-		Mem_Addr <= Next_PC;
+		Mem_Addr        <= Next_PC;
 						-- Adder to increment PC by 4        
       	PC_plus_4( 9 DOWNTO 2 )  <= PC( 9 DOWNTO 2 ) + 1;
        	PC_plus_4( 1 DOWNTO 0 )  <= "00";
 						-- Mux to select Branch Address or PC + 4        
-		Next_PC  <= X"00" WHEN Reset = '1' ELSE
-			Add_result  WHEN ( ( Branch = '1' ) AND ( Zero = '1' ) ) 
+		Next_PC         <= X"00" WHEN Reset = '1' ELSE
+			Add_result  WHEN ( (( Branch = '1' ) AND ( Zero = '1' ))OR (( BNE = '1' ) AND ( Zero = '0' )) ) 
 			ELSE   PC_plus_4( 9 DOWNTO 2 );
 	PROCESS
 		BEGIN
