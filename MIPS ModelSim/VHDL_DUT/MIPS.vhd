@@ -21,6 +21,7 @@ ARCHITECTURE structure OF MIPS IS
         		PC_plus_4_out 		: OUT  	STD_LOGIC_VECTOR( 9 DOWNTO 0 );
         		Add_result 			: IN 	STD_LOGIC_VECTOR( 7 DOWNTO 0 );
         		Branch 				: IN 	STD_LOGIC;
+        		BNE 				: IN 	STD_LOGIC;
         		Zero 				: IN 	STD_LOGIC;
         		PC_out 				: OUT 	STD_LOGIC_VECTOR( 9 DOWNTO 0 );
         		clock,reset 		: IN 	STD_LOGIC );
@@ -47,6 +48,7 @@ ARCHITECTURE structure OF MIPS IS
              	MemRead 			: OUT 	STD_LOGIC;
              	MemWrite 			: OUT 	STD_LOGIC;
              	Branch 				: OUT 	STD_LOGIC;
+             	BNE 				: OUT 	STD_LOGIC;
              	ALUop 				: OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
              	clock, reset		: IN 	STD_LOGIC );
 	END COMPONENT;
@@ -85,6 +87,7 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL read_data 		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 	SIGNAL ALUSrc 			: STD_LOGIC;
 	SIGNAL Branch 			: STD_LOGIC;
+	SIGNAL BNE 			    : STD_LOGIC;
 	SIGNAL RegDst 			: STD_LOGIC;
 	SIGNAL Regwrite 		: STD_LOGIC;
 	SIGNAL Zero 			: STD_LOGIC;
@@ -112,6 +115,7 @@ BEGIN
     	    	PC_plus_4_out 	=> PC_plus_4,
 				Add_result 		=> Add_result,
 				Branch 			=> Branch,
+				BNE 			=> BNE,
 				Zero 			=> Zero,
 				PC_out 			=> PC,        		
 				clock 			=> clock,  
@@ -140,6 +144,7 @@ BEGIN
 				MemRead 		=> MemRead,
 				MemWrite 		=> MemWrite,
 				Branch 			=> Branch,
+				BNE 			=> BNE,
 				ALUop 			=> ALUop,
                 clock 			=> clock,
 				reset 			=> reset );

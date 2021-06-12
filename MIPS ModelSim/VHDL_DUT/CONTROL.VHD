@@ -14,6 +14,7 @@ ENTITY control IS
 	MemRead 		: OUT 	STD_LOGIC;
 	MemWrite 	: OUT 	STD_LOGIC;
 	Branch 		: OUT 	STD_LOGIC;
+	BNE 		: OUT 	STD_LOGIC;
 	ALUop 		: OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 	clock, reset	: IN 	STD_LOGIC );
 
@@ -30,6 +31,7 @@ BEGIN
 	Lw          <=  '1'  WHEN  Opcode = "100011"  ELSE '0';
  	Sw          <=  '1'  WHEN  Opcode = "101011"  ELSE '0';
    	Beq         <=  '1'  WHEN  Opcode = "000100"  ELSE '0';
+   	BNE         <=  '1'  WHEN  Opcode = "000101"  ELSE '0';
    	Mul         <=  '1'  WHEN  Opcode = "011100"  ELSE '0';
   	RegDst    	<=  R_format OR Mul;
  	ALUSrc  	<=  Lw OR Sw OR I_format;
