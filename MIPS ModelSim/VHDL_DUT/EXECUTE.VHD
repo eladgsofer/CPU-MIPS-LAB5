@@ -26,7 +26,7 @@ SIGNAL Ainput, Binput 		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 SIGNAL ALU_output_mux		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 SIGNAL Branch_Add 			: STD_LOGIC_VECTOR( 7 DOWNTO 0 );
 SIGNAL mult64		: STD_LOGIC_VECTOR( 63 DOWNTO 0 );
-SIGNAL ALU_ctl				: STD_LOGIC_VECTOR(2 DOWNTO 0);
+SIGNAL ALU_ctl				: ALU_CMDS;
 SIGNAL Function_translation	: STD_LOGIC_VECTOR( 5 DOWNTO 0 );
 BEGIN
 	Ainput <= Read_data_1;
@@ -58,23 +58,24 @@ BEGIN
 -- 101 : mul    - MUL
 -- 111 : R-type - R-type
     --ALU_ctl <= Function_translation when ALUOp = "00000"  else ALUOp;
-    ALU_ctl <= "010" when  ((Function_opcode = "100000" AND ALUOp = "111") OR ALUOp = "000")  else                               -- ADD,ADDI,LUI
-               "110" when (((Function_opcode = "100010" OR Function_opcode = "101010") AND ALUOp = "111") OR ALUOp = "001")  else -- SUB,SLT,BNE,BNEQ,SLTI
-               "101" when  ((Function_opcode = "100110" AND ALUOp = "111") OR ALUOp = "010" ) else                               -- XORI,XOR
-               "001" when  ((Function_opcode = "100110" AND ALUOp = "111") OR ALUOp = "011" ) else                              -- ORI,OR
-               "000" when  ((Function_opcode = "100100" AND ALUOp = "111") OR ALUOp = "100" ) else                               -- ANDI,AND
-               "111" when (Function_opcode   = "000010" AND ALUOp = "101")  else                                                 -- MUL
-               "010"; -- JUMPS AND SO ON can do add
+    ALU_ctl <= ADDCMD when  ((Function_opcode = "100000" AND ALUOp = "111") OR ALUOp = "000")  else                               -- ADD,ADDI,LUI
+               SUBCMD when (((Function_opcode = "100010" OR Function_opcode = "101010") AND ALUOp = "111") OR ALUOp = "001")  else -- SUB,SLT,BNE,BNEQ,SLTI
+               XORCMD when  ((Function_opcode = "100110" AND ALUOp = "111") OR ALUOp = "010" ) else                               -- XORI,XOR
+               ORCMD when  ((Function_opcode = "100101" AND ALUOp = "111") OR ALUOp = "011" ) else                              -- ORI,OR
+               ANDCMD when  ((Function_opcode = "100100" AND ALUOp = "111") OR ALUOp = "100" ) else                               -- ANDI,AND
+               MULCMD when (Function_opcode   = "000010" AND ALUOp = "101")  else                                                 -- MUL
+               ADDCMD; -- JUMPS AND SO ON can do add
     
     
 						-- Generate Zero Flag
 	Zero <= '1' 
 		WHEN ( ALU_output_mux( 31 DOWNTO 0 ) = X"00000000"  )
 		ELSE '0';    
-						-- Select ALU output        
-	ALU_result <= X"0000000" & B"000"  & ALU_output_mux( 31 ) 
-		WHEN  ALU_ctl = "111" 
-		ELSE  	ALU_output_mux( 31 DOWNTO 0 );
+						-- Select ALU output
+    ALU_result <= ALU_output_mux(31 DOWNTO 0);
+	-- ALU_result <= X"0000000" & B"000"  & ALU_output_mux( 31 ) 
+		-- WHEN  ALU_ctl = "111"  -- 
+		-- ELSE  	ALU_output_mux( 31 DOWNTO 0 );
 						-- Adder to compute Branch Address
 	Branch_Add	<= PC_plus_4( 9 DOWNTO 2 ) +  Sign_extend( 7 DOWNTO 0 ) ;
 		Add_result 	<= Branch_Add( 7 DOWNTO 0 );
@@ -86,21 +87,21 @@ PROCESS ( ALU_ctl, Ainput, Binput, mult64 )
 					-- Select ALU operation
  	CASE ALU_ctl IS
     ------------------ Arithmetic Instructions
-		WHEN "000" 	=>	ALU_output_mux 	<= Ainput AND Binput; 
+		WHEN ANDCMD =>	ALU_output_mux 	<= Ainput AND Binput; 
 						-- ALU performs ALUresult = A_input OR B_input
-   	WHEN "001" 	    =>	ALU_output_mux 	<= Ainput OR Binput;
+   	    WHEN ORCMD 	=>	ALU_output_mux 	<= Ainput OR Binput;
 						-- ALU performs ALUresult = A_input + B_input
-	 	WHEN "010" 	=>	ALU_output_mux 	<= Ainput + Binput;
+	 	WHEN ADDCMD =>	ALU_output_mux 	<= Ainput + Binput;
 						-- ALU performs sll
- 	 	WHEN "011" 	=>	ALU_output_mux 	<= X"00000000";
+ 	 	WHEN SLLCMD	=>	ALU_output_mux 	<= X"00000000";
 						-- ALU performs srl
- 	 	WHEN "100" 	=>	ALU_output_mux 	<= X"00000000";
+ 	 	WHEN SRLCMD =>	ALU_output_mux 	<= X"00000000";
 						-- ALU performs ALUresult = A_input XOR B_input 
- 	 	WHEN "101" 	=>	ALU_output_mux 	<= Ainput XOR Binput;
+ 	 	WHEN XORCMD =>	ALU_output_mux 	<= Ainput XOR Binput;
 						-- ALU performs ALUresult = A_input -B_input
- 	 	WHEN "110" 	=>	ALU_output_mux 	<= Ainput - Binput;
+ 	 	WHEN SUBCMD =>	ALU_output_mux 	<= Ainput - Binput;
 						-- ALU performs MUL
- 	 	WHEN "111" 	=>	ALU_output_mux 	<= mult64(31 DOWNTO 0) ;
+ 	 	WHEN MULCMD	=>	ALU_output_mux 	<= mult64(31 DOWNTO 0) ;
  	 	WHEN OTHERS	    =>	ALU_output_mux 	<= X"00000000" ;		
 
         -- -- add
