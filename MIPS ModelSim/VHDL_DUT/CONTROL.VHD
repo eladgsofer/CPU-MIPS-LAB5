@@ -34,7 +34,7 @@ BEGIN
   	RegDst    	<=  R_format;
  	ALUSrc  	<=  Lw OR Sw OR I_format;
 	MemtoReg 	<=  Lw;
-  	RegWrite 	<=  R_format OR Lw;
+  	RegWrite 	<=  R_format OR Lw OR I_format;
   	MemRead 	<=  Lw;
    	MemWrite 	<=  Sw; 
  	Branch      <=  Beq;
