@@ -9,6 +9,7 @@ ENTITY  Execute IS
 	PORT(	Read_data_1 	: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 			Read_data_2 	: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 			Sign_extend 	: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
+			Shamt           : IN 	STD_LOGIC_VECTOR( 4 DOWNTO 0 );
 			Function_opcode : IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
 			ALUOp 			: IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 			ALUSrc 			: IN 	STD_LOGIC;
@@ -85,6 +86,7 @@ PROCESS ( ALU_ctl, Ainput, Binput, mult64 )
 					-- Select ALU operation
  	CASE ALU_ctl IS
     ------------------ Arithmetic Instructions
+<<<<<<< HEAD
 		WHEN "000" 	=>	ALU_output_mux 	<= Ainput AND Binput; 
 						-- ALU performs ALUresult = A_input OR B_input
    	WHEN "001" 	    =>	ALU_output_mux 	<= Ainput OR Binput;
@@ -127,6 +129,33 @@ PROCESS ( ALU_ctl, Ainput, Binput, mult64 )
         -- WHEN "000000" 	=>	ALU_output_mux <= X"00000000";
                         -- -- shift right logical translation from 000010 -> 000111
         -- WHEN "000111"   => ALU_output_mux <= X"00000000";
+=======
+						-- add
+		WHEN "100000" 	=>	ALU_output_mux 	<= Ainput + Binput; 
+						-- subtract
+     	WHEN "100010" 	=>	ALU_output_mux 	<= Ainput - Binput;
+						-- add immediate
+	 	WHEN "001000" 	=>	ALU_output_mux 	<= Ainput + Binput;
+						-- Multiply (without overflow)
+        WHEN "011100" 	=>	ALU_output_mux <= X"00000000";                
+    ------------------ Logical Instructions
+                        -- and
+ 	 	WHEN "100100" 	=>	ALU_output_mux <= Ainput AND Binput; 
+						-- or
+ 	 	WHEN "100101" 	=>	ALU_output_mux 	<= Ainput OR Binput; 
+						-- xor
+ 	 	WHEN "100110" 	=>	ALU_output_mux 	<= Ainput XOR Binput; 
+						-- andi
+ 	 	WHEN "001100" 	=>	ALU_output_mux <= Ainput AND Binput; 
+						-- ori
+  	 	WHEN "001101" 	=>	ALU_output_mux <= Ainput OR Binput; 
+                        -- xori
+        WHEN "001110" 	=>	ALU_output_mux <= Ainput XOR Binput; 
+                        -- shift left logical
+        WHEN "000000" 	=>	ALU_output_mux <= Ainput sll Shamt;
+                        -- shift right logical
+        WHEN "000111"   => ALU_output_mux <= Ainput srl Shamt;
+>>>>>>> dbedacb (added basic functionality to support shift)
         
     -- ------------------Data Transfer Instructions
                         -- -- lw
