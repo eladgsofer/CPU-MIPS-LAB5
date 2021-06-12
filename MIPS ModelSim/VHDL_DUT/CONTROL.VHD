@@ -47,7 +47,7 @@ BEGIN
 			   "100" when Opcode = "001100" ELSE  --- ANDI
                "101" when Opcode = "011100" ELSE  --- MUL
                "111" when Opcode = "000000" ELSE  --- R-Type
-               ELSE  "000";
+               "000";
 -- ALUOP to function:
 -- 000 : add  - LUI,ADDI
 -- 001 : sub  - SLTI,BEQ,BNQ

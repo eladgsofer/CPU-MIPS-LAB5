@@ -56,6 +56,7 @@ ARCHITECTURE structure OF MIPS IS
                 Read_data_2 		: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
                	Sign_Extend 		: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
                	Function_opcode		: IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
+               	Shamt         		: IN 	STD_LOGIC_VECTOR( 4 DOWNTO 0 );
                	ALUOp 				: IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
                	ALUSrc 				: IN 	STD_LOGIC;
                	Zero 				: OUT	STD_LOGIC;
@@ -147,8 +148,8 @@ BEGIN
    	PORT MAP (	Read_data_1 	=> read_data_1,
              	Read_data_2 	=> read_data_2,
 				Sign_extend 	=> Sign_extend,
-                Shamt        	=> Instruction( 11 DOWNTO 6 ),
                 Function_opcode	=> Instruction( 5 DOWNTO 0 ),
+                Shamt        	=> Instruction( 10 DOWNTO 6 ),
 				ALUOp 			=> ALUop,
 				ALUSrc 			=> ALUSrc,
 				Zero 			=> Zero,
