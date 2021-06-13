@@ -14,9 +14,11 @@ ENTITY  Execute IS
 			Function_opcode : IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
 			ALUOp 			: IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 			ALUSrc 			: IN 	STD_LOGIC;
+			Jr 			    : OUT 	STD_LOGIC;
 			Zero 			: OUT	STD_LOGIC;
 			ALU_Result 		: OUT	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 			Add_Result 		: OUT	STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+			Jump_Result		: OUT	STD_LOGIC_VECTOR( 7 DOWNTO 0 );
 			PC_plus_4 		: IN 	STD_LOGIC_VECTOR( 9 DOWNTO 0 );
 			clock, reset	: IN 	STD_LOGIC );
 END Execute;
@@ -41,6 +43,7 @@ SIGNAL ALU_output_mux		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 SIGNAL Branch_Add 			: STD_LOGIC_VECTOR( 7 DOWNTO 0 );
 SIGNAL mult64		: STD_LOGIC_VECTOR( 63 DOWNTO 0 );
 SIGNAL ALU_ctl				: ALU_CMDS;
+SIGNAL JR_Sig               : STD_LOGIC;
 SIGNAL Function_translation	: STD_LOGIC_VECTOR( 5 DOWNTO 0 );
 BEGIN
 	Ainput <= Read_data_1;
@@ -74,15 +77,15 @@ BEGIN
 -- 101 : mul    - MUL
 -- 111 : R-type - R-type
   --ALU_ctl <= Function_translation when ALUOp = "00000"  else ALUOp;
-    ALU_ctl <= ADDCMD when  ((Function_opcode = "100000" AND ALUOp = "111") OR ALUOp = "000")  else                               -- ADD,ADDI,LUI
-               SUBCMD when ((Function_opcode = "100010"  AND ALUOp = "111") OR ALUOp = "001")  else -- SUB,BNE,BNEQ,SLTI
-               XORCMD when  ((Function_opcode = "100110" AND ALUOp = "111") OR ALUOp = "010" ) else                               -- XORI,XOR
-               ORCMD when  ((Function_opcode = "100101" AND ALUOp = "111") OR ALUOp = "011" ) else                              -- ORI,OR
-               ANDCMD when  ((Function_opcode = "100100" AND ALUOp = "111") OR ALUOp = "100" ) else                               -- ANDI,AND
-               SLLCMD when (Function_opcode = "000000" AND ALUOp = "111") else                                                    -- SLL
-               SRLCMD when (Function_opcode = "000010" AND ALUOp = "111") else                                                    -- SRL
-               MULCMD when (Function_opcode   = "000010" AND ALUOp = "101")  else                                                 -- MUL
-               SLTCMD when (Function_opcode   = "101010" AND ALUOp = "111") OR ALUOp = "110"  else  
+    ALU_ctl <= ADDCMD  when  ((Function_opcode = "100000" AND ALUOp = "111") OR ALUOp = "000")  else                               -- ADD,ADDI,LUI
+               SUBCMD  when ((Function_opcode = "100010"  AND ALUOp = "111") OR ALUOp = "001")  else -- SUB,BNE,BNEQ,SLTI
+               XORCMD  when  ((Function_opcode = "100110" AND ALUOp = "111") OR ALUOp = "010" ) else                               -- XORI,XOR
+               ORCMD   when  ((Function_opcode = "100101" AND ALUOp = "111") OR ALUOp = "011" ) else                              -- ORI,OR
+               ANDCMD  when  ((Function_opcode = "100100" AND ALUOp = "111") OR ALUOp = "100" ) else                               -- ANDI,AND
+               SLLCMD  when (Function_opcode = "000000" AND ALUOp = "111") else                                                    -- SLL
+               SRLCMD  when (Function_opcode = "000010" AND ALUOp = "111") else                                                    -- SRL
+               MULCMD  when (Function_opcode   = "000010" AND ALUOp = "101")  else                                                 -- MUL
+               SLTCMD  when (Function_opcode   = "101010" AND ALUOp = "111") OR ALUOp = "110"  else  
                ADDUCMD when (Function_opcode = "100001" AND ALUOp = "111") else                                                   --ADU
                ADDCMD; -- JUMPS AND SO ON can do add
     
@@ -96,8 +99,12 @@ BEGIN
 						-- Adder to compute Branch Address
 	Branch_Add	<= PC_plus_4( 9 DOWNTO 2 ) +  Sign_extend( 7 DOWNTO 0 ) ;
 		Add_result 	<= Branch_Add( 7 DOWNTO 0 );
+    Jr_Sig <= '1' when Function_opcode = "001000" AND ALUOP = "111" ELSE '0';
+    Jr <= Jr_Sig;
+    Jump_Result <= Ainput(9 DOWNTO 2) WHEN Jr_Sig = '1' ELSE
+                   Sign_extend( 7 DOWNTO 0 );
     
-    mult64 <= Ainput*Binput;	
+    mult64 <= Ainput*Binput;
 
 PROCESS ( ALU_ctl, Ainput, Binput, mult64)
 	BEGIN
