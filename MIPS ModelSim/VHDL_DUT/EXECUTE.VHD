@@ -80,7 +80,7 @@ BEGIN
 -- 111 : R-type - R-type
     --ALU_ctl <= Function_translation when ALUOp = "00000"  else ALUOp;
     ALU_ctl <= ADDCMD when  ((Function_opcode = "100000" AND ALUOp = "111") OR ALUOp = "000")  else                               -- ADD,ADDI,LUI
-               SUBCMD when (((Function_opcode = "100010" OR Function_opcode = "101010") AND ALUOp = "111") OR ALUOp = "001")  else -- SUB,SLT,BNE,BNEQ,SLTI
+               SUBCMD when ((Function_opcode = "100010"  AND ALUOp = "111") OR ALUOp = "001")  else -- SUB,BNE,BNEQ,SLTI
                XORCMD when  ((Function_opcode = "100110" AND ALUOp = "111") OR ALUOp = "010" ) else                               -- XORI,XOR
                ORCMD when  ((Function_opcode = "100101" AND ALUOp = "111") OR ALUOp = "011" ) else                              -- ORI,OR
                ANDCMD when  ((Function_opcode = "100100" AND ALUOp = "111") OR ALUOp = "100" ) else                               -- ANDI,AND
