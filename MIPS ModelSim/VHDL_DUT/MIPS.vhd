@@ -20,8 +20,11 @@ ARCHITECTURE structure OF MIPS IS
    	     PORT(	Instruction			: OUT 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
         		PC_plus_4_out 		: OUT  	STD_LOGIC_VECTOR( 9 DOWNTO 0 );
         		Add_result 			: IN 	STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+        		Jump_Result 		: IN 	STD_LOGIC_VECTOR( 7 DOWNTO 0 );
         		Branch 				: IN 	STD_LOGIC;
         		BNE 				: IN 	STD_LOGIC;
+        		Jump 				: IN 	STD_LOGIC;
+        		Jr  				: IN 	STD_LOGIC;
         		Zero 				: IN 	STD_LOGIC;
         		PC_out 				: OUT 	STD_LOGIC_VECTOR( 9 DOWNTO 0 );
         		clock,reset 		: IN 	STD_LOGIC );
@@ -49,6 +52,8 @@ ARCHITECTURE structure OF MIPS IS
              	MemWrite 			: OUT 	STD_LOGIC;
              	Branch 				: OUT 	STD_LOGIC;
              	BNE 				: OUT 	STD_LOGIC;
+             	Jump 				: OUT 	STD_LOGIC;
+             	Jr  				: IN 	STD_LOGIC;
              	ALUop 				: OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
              	clock, reset		: IN 	STD_LOGIC );
 	END COMPONENT;
@@ -61,9 +66,11 @@ ARCHITECTURE structure OF MIPS IS
                	Shamt         		: IN 	STD_LOGIC_VECTOR( 4 DOWNTO 0 );
                	ALUOp 				: IN 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
                	ALUSrc 				: IN 	STD_LOGIC;
+               	Jr 				    : OUT 	STD_LOGIC;
                	Zero 				: OUT	STD_LOGIC;
                	ALU_Result 			: OUT	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
                	Add_Result 			: OUT	STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+               	Jump_Result			: OUT	STD_LOGIC_VECTOR( 7 DOWNTO 0 );
                	PC_plus_4 			: IN 	STD_LOGIC_VECTOR( 9 DOWNTO 0 );
                	clock, reset		: IN 	STD_LOGIC );
 	END COMPONENT;
@@ -83,11 +90,14 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL read_data_2 		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 	SIGNAL Sign_Extend 		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 	SIGNAL Add_result 		: STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+	SIGNAL Jump_result 		: STD_LOGIC_VECTOR( 7 DOWNTO 0 );
 	SIGNAL ALU_result 		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 	SIGNAL read_data 		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 	SIGNAL ALUSrc 			: STD_LOGIC;
 	SIGNAL Branch 			: STD_LOGIC;
 	SIGNAL BNE 			    : STD_LOGIC;
+	SIGNAL Jump			    : STD_LOGIC;
+	SIGNAL Jr 			    : STD_LOGIC;
 	SIGNAL RegDst 			: STD_LOGIC;
 	SIGNAL Regwrite 		: STD_LOGIC;
 	SIGNAL Zero 			: STD_LOGIC;
@@ -114,8 +124,11 @@ BEGIN
 	PORT MAP (	Instruction 	=> Instruction,
     	    	PC_plus_4_out 	=> PC_plus_4,
 				Add_result 		=> Add_result,
+				Jump_Result 	=> Jump_Result,
 				Branch 			=> Branch,
 				BNE 			=> BNE,
+				Jump 			=> Jump,
+				Jr   			=> Jr,
 				Zero 			=> Zero,
 				PC_out 			=> PC,        		
 				clock 			=> clock,  
@@ -145,6 +158,8 @@ BEGIN
 				MemWrite 		=> MemWrite,
 				Branch 			=> Branch,
 				BNE 			=> BNE,
+				Jump 			=> Jump,
+				Jr 			    => Jr,
 				ALUop 			=> ALUop,
                 clock 			=> clock,
 				reset 			=> reset );
@@ -157,9 +172,11 @@ BEGIN
                 Shamt        	=> Instruction( 10 DOWNTO 6 ),
 				ALUOp 			=> ALUop,
 				ALUSrc 			=> ALUSrc,
+				Jr  			=> Jr,
 				Zero 			=> Zero,
                 ALU_Result		=> ALU_Result,
 				Add_Result 		=> Add_Result,
+				Jump_Result 	=> Jump_Result,
 				PC_plus_4		=> PC_plus_4,
                 Clock			=> clock,
 				Reset			=> reset );

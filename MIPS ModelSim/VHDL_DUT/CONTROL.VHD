@@ -11,10 +11,12 @@ ENTITY control IS
 	ALUSrc 		: OUT 	STD_LOGIC;
 	MemtoReg 	: OUT 	STD_LOGIC;
 	RegWrite 	: OUT 	STD_LOGIC;
-	MemRead 		: OUT 	STD_LOGIC;
+	MemRead 	: OUT 	STD_LOGIC;
 	MemWrite 	: OUT 	STD_LOGIC;
 	Branch 		: OUT 	STD_LOGIC;
 	BNE 		: OUT 	STD_LOGIC;
+	Jump 		: OUT 	STD_LOGIC;
+	Jr   		: IN 	STD_LOGIC;
 	ALUop 		: OUT 	STD_LOGIC_VECTOR( 2 DOWNTO 0 );
 	clock, reset	: IN 	STD_LOGIC );
 
@@ -33,10 +35,11 @@ BEGIN
    	Beq         <=  '1'  WHEN  Opcode = "000100"  ELSE '0';
    	BNE         <=  '1'  WHEN  Opcode = "000101"  ELSE '0';
    	Mul         <=  '1'  WHEN  Opcode = "011100"  ELSE '0';
+   	Jump        <=  '1'  WHEN  Opcode = "000010"  ELSE '0';
   	RegDst    	<=  R_format OR Mul;
  	ALUSrc  	<=  Lw OR Sw OR I_format;
 	MemtoReg 	<=  Lw;
-  	RegWrite 	<=  R_format OR Lw OR I_format OR Mul;
+  	RegWrite 	<=  (R_format AND NOT Jr) OR Lw OR I_format OR Mul;
   	MemRead 	<=  Lw;
    	MemWrite 	<=  Sw; 
  	Branch      <=  Beq;
