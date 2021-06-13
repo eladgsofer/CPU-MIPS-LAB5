@@ -35,7 +35,7 @@ component Shifter IS
           cflag:OUT STD_LOGIC);
 END component;
 --------------------------------------------------------
-TYPE   ALU_CMDS IS (ANDCMD,ORCMD,ADDCMD,SUBCMD,XORCMD,MULCMD,SLLCMD,SRLCMD,ADDUCMD);
+TYPE   ALU_CMDS IS (ANDCMD,ORCMD,ADDCMD,SUBCMD,XORCMD,MULCMD,SLLCMD,SRLCMD,ADDUCMD,SLTCMD);
 SIGNAL Ainput, Binput 		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 SIGNAL ALU_output_mux		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 SIGNAL Branch_Add 			: STD_LOGIC_VECTOR( 7 DOWNTO 0 );
@@ -80,23 +80,24 @@ BEGIN
 -- 111 : R-type - R-type
     --ALU_ctl <= Function_translation when ALUOp = "00000"  else ALUOp;
     ALU_ctl <= ADDCMD when  ((Function_opcode = "100000" AND ALUOp = "111") OR ALUOp = "000")  else                               -- ADD,ADDI,LUI
-               SUBCMD when (((Function_opcode = "100010" OR Function_opcode = "101010") AND ALUOp = "111") OR ALUOp = "001")  else -- SUB,SLT,BNE,BNEQ,SLTI
+               SUBCMD when ((Function_opcode = "100010"  AND ALUOp = "111") OR ALUOp = "001")  else -- SUB,BNE,BNEQ,SLTI
                XORCMD when  ((Function_opcode = "100110" AND ALUOp = "111") OR ALUOp = "010" ) else                               -- XORI,XOR
                ORCMD when  ((Function_opcode = "100101" AND ALUOp = "111") OR ALUOp = "011" ) else                              -- ORI,OR
                ANDCMD when  ((Function_opcode = "100100" AND ALUOp = "111") OR ALUOp = "100" ) else                               -- ANDI,AND
                SLLCMD when (Function_opcode = "000000" AND ALUOp = "111") else                                                    -- SLL
                SRLCMD when (Function_opcode = "000010" AND ALUOp = "111") else                                                    -- SRL
                MULCMD when (Function_opcode   = "000010" AND ALUOp = "101")  else                                                 -- MUL
+               SLTCMD when (Function_opcode   = "101010" AND ALUOp = "111") OR ALUOp = "110"  else                                                 -- MUL
                ADDCMD; -- JUMPS AND SO ON can do add
     
     
 						-- Generate Zero Flag
 	Zero <= '1' WHEN ( ALU_output_mux( 31 DOWNTO 0 ) = X"00000000") ELSE '0';    
 						-- Select ALU output
-    ALU_result <= ALU_output_mux(31 DOWNTO 0);
-	-- ALU_result <= X"0000000" & B"000"  & ALU_output_mux( 31 ) 
-		-- WHEN  ALU_ctl = "111"  -- 
-		-- ELSE  	ALU_output_mux( 31 DOWNTO 0 );
+    --ALU_result <= ALU_output_mux(31 DOWNTO 0);
+	ALU_result <= X"0000000" & B"000"  & ALU_output_mux( 31 ) 
+		WHEN  ALU_ctl = SLTCMD  -- 
+		ELSE  	ALU_output_mux( 31 DOWNTO 0 );
 						-- Adder to compute Branch Address
 	Branch_Add	<= PC_plus_4( 9 DOWNTO 2 ) +  Sign_extend( 7 DOWNTO 0 ) ;
 		Add_result 	<= Branch_Add( 7 DOWNTO 0 );
@@ -123,6 +124,7 @@ PROCESS ( ALU_ctl, Ainput, Binput, mult64, SLL_SIG, SRL_SIG)
  	 	WHEN SUBCMD =>	ALU_output_mux 	<= Ainput - Binput;
 						-- ALU performs MUL
  	 	WHEN MULCMD	=>	ALU_output_mux 	<= mult64(31 DOWNTO 0);
+ 	 	WHEN SLTCMD	=>	ALU_output_mux 	<= Ainput - Binput;
  	 	WHEN OTHERS	    =>	ALU_output_mux 	<= X"00000000" ;		
 
         -- -- add

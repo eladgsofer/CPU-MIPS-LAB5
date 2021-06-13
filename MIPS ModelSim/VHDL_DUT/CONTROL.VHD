@@ -43,11 +43,12 @@ BEGIN
 	--ALUOp( 1 ) 	<=  R_format;
 	--ALUOp( 0 ) 	<=  Beq; 
 	ALUOP   <= "000" when (Opcode = "001111" OR Opcode = "001000")  ELSE  --- LUI & ADDI = add 
-			   "001" when (Opcode = "001010" OR Opcode = "000100" OR Opcode = "000101")  ELSE  --- SLTI, BEQ, BNQ = sub
+			   "001" when (Opcode = "000100" OR Opcode = "000101")  ELSE  --- SLTI, BEQ, BNQ = sub
 			   "010" when Opcode = "001110" ELSE  --- XOR
                "011" when Opcode = "001101" ELSE  --- OR
 			   "100" when Opcode = "001100" ELSE  --- ANDI
                "101" when Opcode = "011100" ELSE  --- MUL
+               "110" when Opcode = "001010" ELSE  --- SLT
                "111" when Opcode = "000000" ELSE  --- R-Type
                "000";
 -- ALUOP to function:
