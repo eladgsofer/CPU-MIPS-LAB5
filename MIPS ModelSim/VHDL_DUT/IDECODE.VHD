@@ -10,9 +10,10 @@ ENTITY Idecode IS
 			Instruction : IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 			read_data 	: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 			ALU_result	: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
+            PC_plus_4 	: IN    STD_LOGIC_VECTOR( 9 DOWNTO 0 );
 			RegWrite 	: IN 	STD_LOGIC;
-			MemtoReg 	: IN 	STD_LOGIC;
-			RegDst 		: IN 	STD_LOGIC;
+			MemtoReg 	: IN 	STD_LOGIC_VECTOR(1 DOWNTO 0);
+			RegDst 		: IN 	STD_LOGIC_VECTOR(1 DOWNTO 0);
 			Sign_extend : OUT 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 			clock,reset	: IN 	STD_LOGIC );
 END Idecode;
@@ -42,16 +43,21 @@ BEGIN
 					-- Read Register 2 Operation		 
 	read_data_2 <= register_array( 
 			      CONV_INTEGER( read_register_2_address ) );
-					-- Mux for Register Write Address
-   write_register_address <= write_register_address_1 
-			WHEN RegDst = '1'  			ELSE write_register_address_0;
+ 					-- Mux for Register Write Address
+    write_register_address <= write_register_address_1 WHEN RegDst = "01" ELSE
+                              "11111"                 WHEN RegDst = "10" ELSE
+                              write_register_address_0;
 					-- Mux to bypass data memory for Rformat instructions
-	write_data <= ALU_result( 31 DOWNTO 0 ) 
-			WHEN ( MemtoReg = '0' ) 	ELSE read_data;
-					-- Sign Extend 16-bits to 32-bits
-    	Sign_extend <= X"0000" & Instruction_immediate_value
-		WHEN Instruction_immediate_value(15) = '0'
-		ELSE	X"FFFF" & Instruction_immediate_value;
+	-- write_data <= ALU_result( 31 DOWNTO 0 ) WHEN ( MemtoReg = '0' ) ELSE 
+                  -- read_data;
+    
+    write_data <= read_data                    WHEN MemtoReg = "01" ELSE 
+                  X"00000" & B"00" & PC_plus_4 WHEN MemtoReg = "10" ELSE
+                  ALU_result;
+    
+    -- Sign Extend 16-bits to 32-bits
+    Sign_extend <= X"0000" & Instruction_immediate_value WHEN Instruction_immediate_value(15) = '0' ELSE
+                   X"FFFF" & Instruction_immediate_value;
 
 PROCESS
 	BEGIN
