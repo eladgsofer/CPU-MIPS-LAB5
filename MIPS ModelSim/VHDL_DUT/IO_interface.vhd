@@ -47,8 +47,8 @@ architecture dfl of IO_interface is
 	SIGNAL disp_HEX0,disp_HEX1,disp_HEX2,disp_HEX3 : STD_LOGIC_VECTOR (3 DOWNTO 0);
 	SIGNAL D_adress : STD_LOGIC_VECTOR (3 DOWNTO 0);
 begin
-    -- D_adress <= (3=>address(BUS_W-1),2=>address(4),1=>address(3),0=>address(2)); FOR QUARTUS!!!
-	D_adress <= (3=>address(BUS_W-1),2=>address(2),1=>address(1),0=>address(0));
+    D_adress <= (3=>address(BUS_W-1),2=>address(4),1=>address(3),0=>address(2)); FOR QUARTUS!!!
+	--D_adress <= (3=>address(BUS_W-1),2=>address(2),1=>address(1),0=>address(0));
 	
 	B1 : Decoder4_7 port map(D_adress, CS);
 	
