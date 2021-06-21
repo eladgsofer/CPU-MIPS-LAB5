@@ -7,9 +7,9 @@ USE IEEE.STD_LOGIC_SIGNED.ALL;
 ENTITY control IS
    PORT( 	
 	Opcode 		: IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
-	RegDst 		: OUT 	STD_LOGIC;
+	RegDst 		: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 	ALUSrc 		: OUT 	STD_LOGIC;
-	MemtoReg 	: OUT 	STD_LOGIC;
+	MemtoReg 	: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 	RegWrite 	: OUT 	STD_LOGIC;
 	MemRead 	: OUT 	STD_LOGIC;
 	MemWrite 	: OUT 	STD_LOGIC;
@@ -24,7 +24,7 @@ END control;
 
 ARCHITECTURE behavior OF control IS
 
-	SIGNAL  R_format, OpcodeZero, I_format, Lw, Sw, Beq, Mul 	: STD_LOGIC;
+	SIGNAL  R_format, OpcodeZero, I_format, Lw, Sw, Beq, Mul,Jal 	: STD_LOGIC;
 
 BEGIN           
 				-- Code to generate control signals using opcode bits
@@ -35,11 +35,16 @@ BEGIN
    	Beq         <=  '1'  WHEN  Opcode = "000100"  ELSE '0';
    	BNE         <=  '1'  WHEN  Opcode = "000101"  ELSE '0';
    	Mul         <=  '1'  WHEN  Opcode = "011100"  ELSE '0';
-   	Jump        <=  '1'  WHEN  Opcode = "000010"  ELSE '0';
-  	RegDst    	<=  R_format OR Mul;
+   	Jump        <=  '1'  WHEN  Opcode = "000010" OR Opcode  = "000011" ELSE '0';
+   	Jal         <=  '1'  WHEN  Opcode  = "000011"  ELSE '0';
+  	RegDst    	<=   "01" WHEN  (R_format OR Mul) = '1' ELSE
+                   "10" WHEN  Jal = '1' ELSE -- use a constant 31
+                   "00";
  	ALUSrc  	<=  Lw OR Sw OR I_format;
-	MemtoReg 	<=  Lw;
-  	RegWrite 	<=  (R_format AND NOT Jr) OR Lw OR I_format OR Mul;
+	MemtoReg 	<=  "01" WHEN Lw  = '1' ELSE -- Load Word writes to regs from memory
+                    "10" WHEN Jal = '1' ELSE -- jump and link writes to reg 31 from pc+4
+                    "00";                    -- all others write to regs from alu result
+  	RegWrite 	<=  (R_format AND NOT Jr) OR Lw OR I_format OR Mul OR Jal;
   	MemRead 	<=  Lw;
    	MemWrite 	<=  Sw; 
  	Branch      <=  Beq;

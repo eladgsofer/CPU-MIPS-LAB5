@@ -36,17 +36,19 @@ ARCHITECTURE structure OF MIPS IS
         		Instruction 		: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
         		read_data 			: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
         		ALU_result 			: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
-        		RegWrite, MemtoReg 	: IN 	STD_LOGIC;
-        		RegDst 				: IN 	STD_LOGIC;
+        		PC_plus_4 			: IN 	STD_LOGIC_VECTOR( 9  DOWNTO 0 );
+        		RegWrite 	        : IN 	STD_LOGIC;
+        		MemtoReg 	        : IN 	STD_LOGIC_VECTOR( 1  DOWNTO 0 );
+        		RegDst 				: IN 	STD_LOGIC_VECTOR( 1  DOWNTO 0 );
         		Sign_extend 		: OUT 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
         		clock, reset		: IN 	STD_LOGIC );
 	END COMPONENT;
 
 	COMPONENT control
 	     PORT( 	Opcode 				: IN 	STD_LOGIC_VECTOR( 5 DOWNTO 0 );
-             	RegDst 				: OUT 	STD_LOGIC;
+             	RegDst 				: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
              	ALUSrc 				: OUT 	STD_LOGIC;
-             	MemtoReg 			: OUT 	STD_LOGIC;
+             	MemtoReg 			: OUT 	STD_LOGIC_VECTOR( 1 DOWNTO 0 );
              	RegWrite 			: OUT 	STD_LOGIC;
              	MemRead 			: OUT 	STD_LOGIC;
              	MemWrite 			: OUT 	STD_LOGIC;
@@ -98,11 +100,11 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL BNE 			    : STD_LOGIC;
 	SIGNAL Jump			    : STD_LOGIC;
 	SIGNAL Jr 			    : STD_LOGIC;
-	SIGNAL RegDst 			: STD_LOGIC;
+	SIGNAL RegDst 			: STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 	SIGNAL Regwrite 		: STD_LOGIC;
 	SIGNAL Zero 			: STD_LOGIC;
 	SIGNAL MemWrite 		: STD_LOGIC;
-	SIGNAL MemtoReg 		: STD_LOGIC;
+	SIGNAL MemtoReg 		: STD_LOGIC_VECTOR( 1 DOWNTO 0 );
 	SIGNAL MemRead 			: STD_LOGIC;
 	SIGNAL ALUop 			: STD_LOGIC_VECTOR(  2 DOWNTO 0 );
 	SIGNAL Instruction		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
@@ -114,7 +116,9 @@ BEGIN
    ALU_result_out 	<= ALU_result;
    read_data_1_out 	<= read_data_1;
    read_data_2_out 	<= read_data_2;
-   write_data_out  	<= read_data WHEN MemtoReg = '1' ELSE ALU_result;
+   write_data_out  	<= read_data                    WHEN MemtoReg = "01" ELSE 
+                       X"00000" & B"00" & PC_plus_4 WHEN MemtoReg = "10" ELSE
+                       ALU_result;
    Branch_out 		<= Branch;
    Zero_out 		<= Zero;
    RegWrite_out 	<= RegWrite;
@@ -140,6 +144,7 @@ BEGIN
         		Instruction 	=> Instruction,
         		read_data 		=> read_data,
 				ALU_result 		=> ALU_result,
+				PC_plus_4 		=> PC_plus_4,
 				RegWrite 		=> RegWrite,
 				MemtoReg 		=> MemtoReg,
 				RegDst 			=> RegDst,
