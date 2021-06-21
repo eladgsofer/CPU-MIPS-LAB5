@@ -4,14 +4,17 @@ USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_ARITH.ALL;
 
 ENTITY MIPS IS
-
+        GENERIC (BUS_W : INTEGER := 8; ADD_BUS: INTEGER :=8; QUARTUS : INTEGER := 0); -- QUARTUS MODE = 12; 10 | MODELSIM = 8; 8
 	PORT( reset, clock					: IN 	STD_LOGIC; 
 		-- Output important signals to pins for easy display in Simulator
 		PC								: OUT  STD_LOGIC_VECTOR( 9 DOWNTO 0 );
 		ALU_result_out, read_data_1_out, read_data_2_out, write_data_out,	
      	Instruction_out					: OUT 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
 		Branch_out, Zero_out, Memwrite_out, 
-		Regwrite_out					: OUT 	STD_LOGIC );
+		Regwrite_out					: OUT 	STD_LOGIC;
+		SW : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
+		LEDG, LEDR : OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
+		HEX0, HEX1, HEX2, HEX3 : OUT STD_LOGIC_VECTOR (6 DOWNTO 0));
 END 	MIPS;
 
 ARCHITECTURE structure OF MIPS IS
@@ -78,13 +81,17 @@ ARCHITECTURE structure OF MIPS IS
 	END COMPONENT;
 
 
-	COMPONENT dmemory
-	     PORT(	read_data 			: OUT 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
-        		address 			: IN 	STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-        		write_data 			: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
-        		MemRead, Memwrite 	: IN 	STD_LOGIC;
-        		Clock,reset			: IN 	STD_LOGIC );
-	END COMPONENT;
+COMPONENT dmemory IS
+    GENERIC (BUS_W : INTEGER := 8; ADD_BUS: INTEGER :=8); -- QUARTUS MODE = 12; 10 | MODELSIM = 8; 8
+	PORT(	read_data 			: OUT 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
+        	address 			: IN 	STD_LOGIC_VECTOR( BUS_W-1 DOWNTO 0 );
+        	write_data 			: IN 	STD_LOGIC_VECTOR( 31 DOWNTO 0 );
+	   		MemRead, Memwrite 	: IN 	STD_LOGIC;
+            clock,reset			: IN 	STD_LOGIC;
+			SW : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
+			LEDG, LEDR : OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
+			HEX0, HEX1, HEX2, HEX3 : OUT STD_LOGIC_VECTOR (6 DOWNTO 0));
+END COMPONENT;
 
 					-- declare signals used to connect VHDL components
 	SIGNAL PC_plus_4 		: STD_LOGIC_VECTOR( 9 DOWNTO 0 );
@@ -108,6 +115,8 @@ ARCHITECTURE structure OF MIPS IS
 	SIGNAL MemRead 			: STD_LOGIC;
 	SIGNAL ALUop 			: STD_LOGIC_VECTOR(  2 DOWNTO 0 );
 	SIGNAL Instruction		: STD_LOGIC_VECTOR( 31 DOWNTO 0 );
+    SIGNAL addressQuartus 		    : STD_LOGIC_VECTOR( BUS_W-1 DOWNTO 0 );
+	
 
 BEGIN
 					-- copy important signals to output pins for easy 
@@ -123,6 +132,10 @@ BEGIN
    Zero_out 		<= Zero;
    RegWrite_out 	<= RegWrite;
    MemWrite_out 	<= MemWrite;	
+   addressQuartus   <= ALU_Result(BUS_W-1 DOWNTO 2) & "00"; 
+   
+ --address          <= ALU_Result(11 DOWNTO 2) & "00"; 
+ 
 					-- connect the 5 MIPS components   
   IFE : Ifetch
 	PORT MAP (	Instruction 	=> Instruction,
@@ -185,14 +198,44 @@ BEGIN
 				PC_plus_4		=> PC_plus_4,
                 Clock			=> clock,
 				Reset			=> reset );
-
-   MEM:  dmemory
-	PORT MAP (	read_data 		=> read_data,
-				address 		=> ALU_Result (9 DOWNTO 2),--jump memory address by 4
-				write_data 		=> read_data_2,
-				MemRead 		=> MemRead, 
-				Memwrite 		=> MemWrite, 
-                clock 			=> clock,  
-				reset 			=> reset );
+   QUARTUS_MEM : IF QUARTUS = 1 GENERATE
+       MEM:  dmemory
+        GENERIC MAP(BUS_W => BUS_W, 
+                    ADD_BUS => ADD_BUS) -- QUARTUS MODE = 12; 10 | MODELSIM = 8; 8
+        PORT MAP (	read_data 		=> read_data,
+                    address 		=> addressQuartus, --jump memory address by 4
+                    write_data 		=> read_data_2,
+                    MemRead 		=> MemRead, 
+                    Memwrite 		=> MemWrite, 
+                    clock 			=> clock,  
+                    reset 			=> reset,
+                    SW => SW,
+                    LEDG => LEDG,
+                    LEDR=> LEDR,
+                    HEX0 => HEX0,
+                    HEX1 => HEX1,
+                    HEX2 => HEX2,
+                    HEX3 => HEX3);
+    END GENERATE;
+    
+    MODELSIM_MEM : IF QUARTUS = 0 GENERATE
+        MEM:  dmemory
+        GENERIC MAP(BUS_W => BUS_W, 
+                    ADD_BUS => ADD_BUS) -- QUARTUS MODE = 12; 10 | MODELSIM = 8; 8
+        PORT MAP (	read_data 		=> read_data,
+                    address 		=> ALU_Result (BUS_W+1 DOWNTO 2), --jump memory address by 4
+                    write_data 		=> read_data_2,
+                    MemRead 		=> MemRead, 
+                    Memwrite 		=> MemWrite, 
+                    clock 			=> clock,  
+                    reset 			=> reset,
+                    SW => SW,
+                    LEDG => LEDG,
+                    LEDR=> LEDR,
+                    HEX0 => HEX0,
+                    HEX1 => HEX1,
+                    HEX2 => HEX2,
+                    HEX3 => HEX3);
+    END GENERATE;
 END structure;
 
